@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi App</title>
+
+  <!-- Google Sign-In library -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    /* ── Pantalla de Login ── */
+    #login-screen {
+      background: white;
+      border-radius: 1.5rem;
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+
+    #login-screen .logo {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #4285F4, #34A853);
+      border-radius: 1rem;
+      margin: 0 auto 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+
+    #login-screen h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 0.5rem;
+    }
+
+    #login-screen p {
+      color: #6b7280;
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Botón de Google renderizado por la librería */
+    #g_id_signin {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .terms {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      line-height: 1.5;
+    }
+
+    .terms a {
+      color: #4285F4;
+      text-decoration: none;
+    }
+
+    /* ── Pantalla de App (después del login) ── */
+    #app-screen {
+      display: none;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .navbar {
+      background: white;
+      border-radius: 1rem;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .navbar .brand {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #1a1a2e;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .user-info img {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 2px solid #e5e7eb;
+    }
+
+    .user-info .name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .btn-logout {
+      background: none;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.85rem;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-logout:hover {
+      background: #fef2f2;
+      border-color: #fca5a5;
+      color: #dc2626;
+    }
+
+    .welcome-card {
+      background: linear-gradient(135deg, #4285F4 0%, #34A853 100%);
+      border-radius: 1.25rem;
+      padding: 2rem;
+      color: white;
+      margin-bottom: 1.5rem;
+    }
+
+    .welcome-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .welcome-card p {
+      opacity: 0.85;
+      font-size: 0.95rem;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    .card .icon {
+      font-size: 1.8rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .card h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 0.25rem;
+    }
+
+    .card p {
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+
+    /* Responsivo para móvil */
+    @media (max-width: 480px) {
+      #login-screen {
+        padding: 2rem 1.25rem;
+      }
+
+      .navbar {
+        padding: 0.75rem 1rem;
+      }
+
+      .welcome-card h2 {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ PANTALLA DE LOGIN ══ -->
+  <div id="login-screen">
+    <div class="logo">🚀</div>
+    <h1>Bienvenido</h1>
+    <p>Inicia sesión para continuar a tu cuenta</p>
+
+    <!--
+      IMPORTANTE: Reemplaza TU_CLIENT_ID con el Client ID
+      que obtuviste de Google Cloud Console
+    -->
+    <div id="g_id_onload"
+         data-client_id="TU_CLIENT_ID_AQUI.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+    </div>
+
+    <div id="g_id_signin"
+         class="g_id_signin"
+         data-type="standard"
+         data-size="large"
+         data-theme="outline"
+         data-text="signin_with"
+         data-shape="rectangular"
+         data-locale="es"
+         data-logo_alignment="left">
+    </div>
+
+    <p class="terms">
+      Al iniciar sesión aceptas nuestros
+      <a href="#">Términos de servicio</a> y
+      <a href="#">Política de privacidad</a>
+    </p>
+  </div>
+
+  <!-- ══ PANTALLA PRINCIPAL (después del login) ══ -->
+  <div id="app-screen">
+    <nav class="navbar">
+      <span class="brand">🚀 Mi App</span>
+      <div class="user-info">
+        <img id="user-avatar" src="" alt="Avatar" />
+        <span id="user-name" class="name"></span>
+        <button class="btn-logout" onclick="signOut()">Cerrar sesión</button>
+      </div>
+    </nav>
+
+    <div class="welcome-card">
+      <h2>¡Hola, <span id="user-first-name"></span>! 👋</h2>
+      <p>Iniciaste sesión correctamente con tu cuenta de Google.</p>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card">
+        <div class="icon">📊</div>
+        <h3>Dashboard</h3>
+        <p>Consulta tus estadísticas y actividad reciente.</p>
+      </div>
+      <div class="card">
+        <div class="icon">⚙️</div>
+        <h3>Configuración</h3>
+        <p>Personaliza tu perfil y preferencias.</p>
+      </div>
+      <div class="card">
+        <div class="icon">📁</div>
+        <h3>Archivos</h3>
+        <p>Accede y gestiona tus documentos.</p>
+      </div>
+      <div class="card">
+        <div class="icon">💬</div>
+        <h3>Mensajes</h3>
+        <p>Revisa tus notificaciones y mensajes.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── Decodificar el token JWT que devuelve Google ──
+    function parseJwt(token) {
+      const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      return JSON.parse(atob(base64));
+    }
+
+    // ── Callback: Google llama esta función al iniciar sesión ──
+    function handleCredentialResponse(response) {
+      const user = parseJwt(response.credential);
+
+      // Guardar sesión en localStorage
+      localStorage.setItem('user', JSON.stringify({
+        name: user.name,
+        email: user.email,
+        picture: user.picture,
+        given_name: user.given_name
+      }));
+
+      showApp(user);
+    }
+
+    // ── Mostrar la app con los datos del usuario ──
+    function showApp(user) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app-screen').style.display = 'block';
+      document.getElementById('user-name').textContent = user.name;
+      document.getElementById('user-first-name').textContent = user.given_name;
+      document.getElementById('user-avatar').src = user.picture;
+    }
+
+    // ── Cerrar sesión ──
+    function signOut() {
+      localStorage.removeItem('user');
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('app-screen').style.display = 'none';
+      // Revocar token de Google
+      google.accounts.id.disableAutoSelect();
+    }
+
+    // ── Verificar si ya hay sesión guardada ──
+    window.onload = function () {
+      const saved = localStorage.getItem('user');
+      if (saved) {
+        showApp(JSON.parse(saved));
+      }
+    };
+  </script>
+
+</body>
+</html>
