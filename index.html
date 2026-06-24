@@ -3,17 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Malla Mecatronica</title>
-
-  <!-- Google Sign-In library -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <title>Mi App</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Segoe UI', system-ui, sans-serif;
@@ -25,297 +19,247 @@
       padding: 1rem;
     }
 
-    /* ── Pantalla de Login ── */
-    #login-screen {
+    .card {
       background: white;
       border-radius: 1.5rem;
       padding: 2.5rem 2rem;
       width: 100%;
       max-width: 420px;
-      text-align: center;
       box-shadow: 0 4px 24px rgba(0,0,0,0.08);
     }
 
-    #login-screen h1 {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: #1a1a2e;
-      margin-bottom: 0.5rem;
-    }
-
-    #login-screen p {
-      color: #6b7280;
-      font-size: 0.95rem;
-      margin-bottom: 2rem;
-    }
-
-    /* Botón de Google renderizado por la librería */
-    #g_id_signin {
+    .logo {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border-radius: 1rem;
       display: flex;
+      align-items: center;
       justify-content: center;
-      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
+      margin: 0 auto 1.5rem;
     }
 
-    .terms {
-      font-size: 0.75rem;
-      color: #9ca3af;
-      line-height: 1.5;
-    }
+    h1 { text-align: center; font-size: 1.5rem; font-weight: 700; color: #1a1a2e; margin-bottom: 0.4rem; }
+    .subtitle { text-align: center; color: #6b7280; font-size: 0.9rem; margin-bottom: 2rem; }
 
-    .terms a {
-      color: #4285F4;
-      text-decoration: none;
-    }
+    .tabs { display: flex; background: #f3f4f6; border-radius: 0.75rem; padding: 4px; margin-bottom: 1.75rem; }
 
-    /* ── Pantalla de App (después del login) ── */
-    #app-screen {
-      display: none;
-      width: 100%;
-      max-width: 900px;
+    .tab {
+      flex: 1; padding: 0.5rem; border: none; background: none;
+      border-radius: 0.5rem; font-size: 0.9rem; font-weight: 600;
+      color: #6b7280; cursor: pointer; transition: all 0.2s;
     }
+    .tab.active { background: white; color: #6366f1; box-shadow: 0 1px 6px rgba(0,0,0,0.1); }
+
+    .form-group { margin-bottom: 1rem; }
+
+    label { display: block; font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 0.4rem; }
+
+    input {
+      width: 100%; padding: 0.75rem 1rem;
+      border: 1.5px solid #e5e7eb; border-radius: 0.75rem;
+      font-size: 0.95rem; color: #1a1a2e; outline: none; transition: border-color 0.2s;
+    }
+    input:focus { border-color: #6366f1; }
+
+    .btn {
+      width: 100%; padding: 0.85rem;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white; border: none; border-radius: 0.75rem;
+      font-size: 1rem; font-weight: 600; cursor: pointer;
+      margin-top: 0.5rem; transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.9; }
+
+    .alert { padding: 0.75rem 1rem; border-radius: 0.75rem; font-size: 0.875rem; margin-bottom: 1rem; display: none; }
+    .alert.error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .alert.success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+
+    #app-screen { display: none; width: 100%; max-width: 900px; }
 
     .navbar {
-      background: white;
-      border-radius: 1rem;
-      padding: 1rem 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-      margin-bottom: 1.5rem;
-      flex-wrap: wrap;
-      gap: 0.75rem;
+      background: white; border-radius: 1rem; padding: 1rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 1.5rem;
+      flex-wrap: wrap; gap: 0.75rem;
     }
 
-    .navbar .brand {
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: #1a1a2e;
+    .brand { font-weight: 700; font-size: 1.1rem; color: #1a1a2e; }
+    .user-badge { display: flex; align-items: center; gap: 0.75rem; }
+
+    .avatar {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; color: white; font-weight: 700; font-size: 0.9rem;
     }
 
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .user-info img {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      border: 2px solid #e5e7eb;
-    }
-
-    .user-info .name {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #374151;
-    }
+    .user-email { font-size: 0.85rem; color: #374151; font-weight: 500; }
 
     .btn-logout {
-      background: none;
-      border: 1px solid #e5e7eb;
-      border-radius: 0.5rem;
-      padding: 0.4rem 0.9rem;
-      font-size: 0.85rem;
-      color: #6b7280;
-      cursor: pointer;
-      transition: all 0.2s;
+      background: none; border: 1px solid #e5e7eb; border-radius: 0.5rem;
+      padding: 0.4rem 0.9rem; font-size: 0.85rem; color: #6b7280; cursor: pointer; transition: all 0.2s;
     }
+    .btn-logout:hover { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
 
-    .btn-logout:hover {
-      background: #fef2f2;
-      border-color: #fca5a5;
-      color: #dc2626;
+    .welcome-banner {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      border-radius: 1.25rem; padding: 2rem; color: white; margin-bottom: 1.5rem;
     }
+    .welcome-banner h2 { font-size: 1.4rem; margin-bottom: 0.4rem; }
+    .welcome-banner p { opacity: 0.85; font-size: 0.9rem; }
 
-    .welcome-card {
-      background: linear-gradient(135deg, #4285F4 0%, #34A853 100%);
-      border-radius: 1.25rem;
-      padding: 2rem;
-      color: white;
-      margin-bottom: 1.5rem;
-    }
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
 
-    .welcome-card h2 {
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
-    }
+    .info-card { background: white; border-radius: 1rem; padding: 1.25rem; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .info-card .icon { font-size: 1.6rem; margin-bottom: 0.5rem; }
+    .info-card h3 { font-size: 0.95rem; font-weight: 600; color: #1a1a2e; }
+    .info-card p { font-size: 0.82rem; color: #6b7280; margin-top: 0.2rem; }
 
-    .welcome-card p {
-      opacity: 0.85;
-      font-size: 0.95rem;
-    }
-
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-    }
-
-    .card {
-      background: white;
-      border-radius: 1rem;
-      padding: 1.5rem;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-    }
-
-    .card .icon {
-      font-size: 1.8rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .card h3 {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #1a1a2e;
-      margin-bottom: 0.25rem;
-    }
-
-    .card p {
-      font-size: 0.85rem;
-      color: #6b7280;
-    }
-
-    /* Responsivo para móvil */
     @media (max-width: 480px) {
-      #login-screen {
-        padding: 2rem 1.25rem;
-      }
-
-      .navbar {
-        padding: 0.75rem 1rem;
-      }
-
-      .welcome-card h2 {
-        font-size: 1.2rem;
-      }
+      .card { padding: 2rem 1.25rem; }
+      .navbar { padding: 0.75rem 1rem; }
+      .user-email { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ══ PANTALLA DE LOGIN ══ -->
-  <div id="login-screen">
+  <div class="card" id="auth-screen">
     <div class="logo">🚀</div>
-    <h1>Bienvenido</h1>
-    <p>Inicia sesión para continuar a tu cuenta</p>
+    <h1>Mi App</h1>
+    <p class="subtitle">Accede a tu cuenta para continuar</p>
 
-    <!--
-      IMPORTANTE: Reemplaza TU_CLIENT_ID con el Client ID
-      que obtuviste de Google Cloud Console
-    -->
-    <div id="g_id_onload"
-         data-client_id="TU_CLIENT_ID_AQUI.apps.googleusercontent.com"
-         data-callback="handleCredentialResponse"
-         data-auto_prompt="false">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login', event)">Iniciar sesión</button>
+      <button class="tab" onclick="switchTab('register', event)">Crear cuenta</button>
     </div>
 
-    <div id="g_id_signin"
-         class="g_id_signin"
-         data-type="standard"
-         data-size="large"
-         data-theme="outline"
-         data-text="signin_with"
-         data-shape="rectangular"
-         data-locale="es"
-         data-logo_alignment="left">
+    <div id="alert" class="alert"></div>
+
+    <div id="form-login">
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="email" id="login-email" placeholder="tu@correo.com" />
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="login-password" placeholder="••••••••" />
+      </div>
+      <button class="btn" onclick="login()">Iniciar sesión</button>
     </div>
 
-    <p class="terms">
-      Al iniciar sesión aceptas nuestros
-      <a href="#">Términos de servicio</a> y
-      <a href="#">Política de privacidad</a>
-    </p>
+    <div id="form-register" style="display:none">
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="email" id="reg-email" placeholder="tu@correo.com" />
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres" />
+      </div>
+      <div class="form-group">
+        <label>Confirmar contraseña</label>
+        <input type="password" id="reg-confirm" placeholder="Repite tu contraseña" />
+      </div>
+      <button class="btn" onclick="register()">Crear cuenta</button>
+    </div>
   </div>
 
-  <!-- ══ PANTALLA PRINCIPAL (después del login) ══ -->
   <div id="app-screen">
     <nav class="navbar">
-      <span class="brand">🚀 Mi App</span>
-      <div class="user-info">
-        <img id="user-avatar" src="" alt="Avatar" />
-        <span id="user-name" class="name"></span>
-        <button class="btn-logout" onclick="signOut()">Cerrar sesión</button>
+      <span class="brand">Malla Mecatronica</span>
+      <div class="user-badge">
+        <div class="avatar" id="user-initial">U</div>
+        <span class="user-email" id="user-email-display"></span>
+        <button class="btn-logout" onclick="logout()">Salir</button>
       </div>
     </nav>
 
-    <div class="welcome-card">
-      <h2>¡Hola, <span id="user-first-name"></span>! 👋</h2>
-      <p>Iniciaste sesión correctamente con tu cuenta de Google.</p>
+    <div class="welcome-banner">
+      <h2>¡Bienvenido! 👋</h2>
+      <p id="welcome-email">Sesión iniciada correctamente.</p>
     </div>
 
     <div class="cards-grid">
-      <div class="card">
-        <div class="icon">📊</div>
-        <h3>Dashboard</h3>
-        <p>Consulta tus estadísticas y actividad reciente.</p>
-      </div>
-      <div class="card">
-        <div class="icon">⚙️</div>
-        <h3>Configuración</h3>
-        <p>Personaliza tu perfil y preferencias.</p>
-      </div>
-      <div class="card">
-        <div class="icon">📁</div>
-        <h3>Archivos</h3>
-        <p>Accede y gestiona tus documentos.</p>
-      </div>
-      <div class="card">
-        <div class="icon">💬</div>
-        <h3>Mensajes</h3>
-        <p>Revisa tus notificaciones y mensajes.</p>
-      </div>
+      <div class="info-card"><div class="icon">📊</div><h3>Dashboard</h3><p>Consulta tu actividad reciente.</p></div>
+      <div class="info-card"><div class="icon">⚙️</div><h3>Configuración</h3><p>Personaliza tu perfil.</p></div>
+      <div class="info-card"><div class="icon">📁</div><h3>Archivos</h3><p>Gestiona tus documentos.</p></div>
+      <div class="info-card"><div class="icon">💬</div><h3>Mensajes</h3><p>Revisa tus notificaciones.</p></div>
     </div>
   </div>
 
   <script>
-    // ── Decodificar el token JWT que devuelve Google ──
-    function parseJwt(token) {
-      const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-      return JSON.parse(atob(base64));
+    // ══════════════════════════════════════════════
+    //  REEMPLAZA ESTOS DOS VALORES CON LOS TUYOS
+    //  (Supabase → Settings → API)
+    // ══════════════════════════════════════════════
+    const SUPABASE_URL = 'https://otjhnrdovgqeqpofdwry.supabase.co/rest/v1/';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90amhucmRvdmdxZXFwb2Zkd3J5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNTM2NTgsImV4cCI6MjA5NzgyOTY1OH0.Yo0ymZfe_bStzczZpydeMXv680_QLW69ZPd9u92I1ys';
+    // ══════════════════════════════════════════════
+
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    function switchTab(tab, e) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      e.target.classList.add('active');
+      document.getElementById('form-login').style.display    = tab === 'login'    ? 'block' : 'none';
+      document.getElementById('form-register').style.display = tab === 'register' ? 'block' : 'none';
+      hideAlert();
     }
 
-    // ── Callback: Google llama esta función al iniciar sesión ──
-    function handleCredentialResponse(response) {
-      const user = parseJwt(response.credential);
+    function showAlert(msg, type = 'error') {
+      const el = document.getElementById('alert');
+      el.textContent = msg;
+      el.className = `alert ${type}`;
+      el.style.display = 'block';
+    }
+    function hideAlert() { document.getElementById('alert').style.display = 'none'; }
 
-      // Guardar sesión en localStorage
-      localStorage.setItem('user', JSON.stringify({
-        name: user.name,
-        email: user.email,
-        picture: user.picture,
-        given_name: user.given_name
-      }));
-
-      showApp(user);
+    async function login() {
+      const email    = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      if (!email || !password) return showAlert('Completa todos los campos.');
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) return showAlert('Correo o contraseña incorrectos.');
+      showApp(data.user);
     }
 
-    // ── Mostrar la app con los datos del usuario ──
-    function showApp(user) {
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('app-screen').style.display = 'block';
-      document.getElementById('user-name').textContent = user.name;
-      document.getElementById('user-first-name').textContent = user.given_name;
-      document.getElementById('user-avatar').src = user.picture;
-    }
-
-    // ── Cerrar sesión ──
-    function signOut() {
-      localStorage.removeItem('user');
-      document.getElementById('login-screen').style.display = 'flex';
-      document.getElementById('app-screen').style.display = 'none';
-      // Revocar token de Google
-      google.accounts.id.disableAutoSelect();
-    }
-
-    // ── Verificar si ya hay sesión guardada ──
-    window.onload = function () {
-      const saved = localStorage.getItem('user');
-      if (saved) {
-        showApp(JSON.parse(saved));
+    async function register() {
+      const email    = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const confirm  = document.getElementById('reg-confirm').value;
+      if (!email || !password) return showAlert('Completa todos los campos.');
+      if (password.length < 6)  return showAlert('La contraseña debe tener al menos 6 caracteres.');
+      if (password !== confirm)  return showAlert('Las contraseñas no coinciden.');
+      const { data, error } = await sb.auth.signUp({ email, password });
+      if (error) return showAlert(error.message);
+      if (data.user && !data.session) {
+        showAlert('¡Cuenta creada! Revisa tu correo para confirmar.', 'success');
+      } else {
+        showApp(data.user);
       }
-    };
+    }
+
+    async function logout() {
+      await sb.auth.signOut();
+      document.getElementById('auth-screen').style.display = 'flex';
+      document.getElementById('app-screen').style.display  = 'none';
+    }
+
+    function showApp(user) {
+      document.getElementById('auth-screen').style.display  = 'none';
+      document.getElementById('app-screen').style.display   = 'block';
+      document.getElementById('user-email-display').textContent = user.email;
+      document.getElementById('welcome-email').textContent  = `Sesión iniciada como ${user.email}`;
+      document.getElementById('user-initial').textContent   = user.email[0].toUpperCase();
+    }
+
+    sb.auth.getSession().then(({ data }) => {
+      if (data.session) showApp(data.session.user);
+    });
   </script>
 
 </body>
